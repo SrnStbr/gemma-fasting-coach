@@ -2,7 +2,7 @@
 name: fasting-coach
 description: A motivational intermittent fasting coach that tracks fasts, explains body phases, celebrates streaks, and keeps all health data 100% on-device. Supports 16/8, 18/6, 14/10, and OMAD protocols. Say "start fasting" to begin.
 metadata:
-  homepage: https://github.com/soerensen/fasting-coach
+  homepage: https://github.com/SrnStbr/gemma-fasting-coach
 ---
 
 # Fasting Coach 🦁
