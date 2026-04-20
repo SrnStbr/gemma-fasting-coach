@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fasting Coach</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: none; }
+</style>
+</head>
+<body>
+<script>
+// ============================================================
+// FASTING COACH — JS Skill Logic
+// All data in localStorage. Zero cloud. Zero tracking.
+// ============================================================
+
+const STORAGE_KEY = 'fc_active';
+const HISTORY_KEY = 'fc_history';
+
+// Protocol definitions: target hours
+const PROTOCOLS = {
+  '14/10': 14,
+  '16/8': 16,
+  '18/6': 18,
+  'OMAD': 23
+};
+
+const PHASES = [
+  { name: 'Digestion',   emoji: '🔄', color: '#4A90D9', minPct: 0,    maxPct: 0.25,
+    desc: 'Insulin drops. Body transitions from fed to fasted state.' },
+  { name: 'Transition',  emoji: '⚡', color: '#50C878', minPct: 0.25, maxPct: 0.50,
+    desc: 'Glycogen depleting. Fat burning begins!' },
+  { name: 'Fat Burn',    emoji: '🔥', color: '#FF8C00', minPct: 0.50, maxPct: 0.75,
+    desc: 'Body running on fat. Mental clarity increases.' },
+  { name: 'Deep Burn',   emoji: '🦁', color: '#FF4500', minPct: 0.75, maxPct: 0.94,
+    desc: 'Autophagy begins. Cellular repair activated!' },
+  { name: 'Goal!',        emoji: '🎉', color: '#FFD700', minPct: 0.94, maxPct: Infinity,
+    desc: 'Protocol target reached! Full autophagy!' }
+];
+
+const MOTIVATIONS = {
+  'Digestion':  ['Every hour counts. Keep going! 💪', 'The journey of 16 hours starts with a single minute.', 'Your body is switching gears. Trust the process!'],
+  'Transition':  ['Fat burning is kicking in! 🔥', 'You are entering the zone!', 'Glycogen is almost gone. Fat is next.'],
+  'Fat Burn':    ['Your body is literally burning fat right now! 🔥', 'Clarity mode: ON. You are crushing it!', 'Fat is fuel. You are the engine.'],
+  'Deep Burn':   ['Autophagy is happening! Cells are being repaired! 🦁', 'You are in the deep zone now. Elite discipline!', 'Maximum fat oxidation. Your body thanks you.'],
+  'Goal!':       ['You did it! Incredible discipline! 🎉', 'Goal reached! You absolute champion!', 'That is elite-level fasting. Be proud!']
+};
+
+function getPhase(elapsedMs, targetMs) {
+  const pct = Math.min(elapsedMs / targetMs, 1);
+  for (const phase of PHASES) {
+    if (pct >= phase.minPct && pct < phase.maxPct) return phase;
+  }
+  return PHASES[PHASES.length - 1];
+}
+
+function getMotivation(phaseName) {
+  const m = MOTIVATIONS[phaseName] || ['Keep going!'];
+  return m[Math.floor(Math.random() * m.length)];
+}
+
+function formatDuration(ms) {
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+function formatTime(ts) {
+  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getStreak(history) {
+  if (!history || history.length === 0) return 0;
+  const sorted = [...history].sort((a, b) => b.endTime - a.endTime);
+  const today = new Date().setHours(0,0,0,0);
+  let streak = 0;
+  let checkDay = today;
+  for (let i = 0; i < 90; i++) {
+    const dayStr = new Date(checkDay).toISOString().split('T')[0];
+    const found = sorted.find(f => f.date === dayStr && f.goalReached);
+    if (found) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+    checkDay -= 86400000;
+  }
+  return streak;
+}
+
+function saveActive(startTs, targetTs, protocol) {
+  const data = { startTime: startTs, targetTime: targetTs, protocol: protocol };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadActive() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+}
+
+function saveToHistory(entry) {
+  const history = loadHistory();
+  history.push(entry);
+  // Keep last 90 entries
+  if (history.length > 90) history.splice(0, history.length - 90);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; }
+}
+
+// ============================================================
+// ACTION HANDLERS
+// ============================================================
+
+function startFasting(data) {
+  // Cancel existing fast if any
+  const existing = loadActive();
+  if (existing) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  const protocol = (data.protocol && PROTOCOLS[data.protocol]) ? data.protocol : '16/8';
+  const targetHours = PROTOCOLS[protocol];
+  const now = Date.now();
+  const target = now + (targetHours * 3600000);
+
+  saveActive(now, target, protocol);
+
+  const targetStr = formatTime(target);
+  const phase = getPhase(0, targetHours * 3600000);
+
+  return JSON.stringify({
+    result: `⏱️ Fasting started!\n` +
+            `Protocol: ${protocol} (${targetHours}h target)\n` +
+            `Target time: ${targetStr}\n` +
+            `Phase: ${phase.emoji} ${phase.name}\n\n` +
+            `${getMotivation(phase.name)}`,
+    webview: {
+      url: `webview.html?action=status&t=${now}`,
+      aspectRatio: 1.3
+    }
+  });
+}
+
+function stopFasting() {
+  const active = loadActive();
+  if (!active) {
+    return JSON.stringify({
+      result: "You don't have an active fast right now. Say **start fasting** to begin!"
+    });
+  }
+
+  const now = Date.now();
+  const duration = now - active.startTime;
+  const targetDuration = active.targetTime - active.startTime;
+  const goalReached = duration >= targetDuration * 0.94; // 94% counts
+  const durationStr = formatDuration(duration);
+
+  // Save to history
+  saveToHistory({
+    date: new Date().toISOString().split('T')[0],
+    startTime: active.startTime,
+    endTime: now,
+    durationMinutes: Math.round(duration / 60000),
+    protocol: active.protocol,
+    goalReached: goalReached
+  });
+
+  // Remove active fast
+  localStorage.removeItem(STORAGE_KEY);
+
+  const streak = getStreak(loadHistory());
+  let msg = goalReached
+    ? `🎉 Fast complete! ${durationStr} — Goal reached!`
+    : `💪 Fast ended after ${durationStr}. ` +
+      (duration > 600000
+        ? 'Not quite the target, but every fast counts!'
+        : 'Short fasts still have benefits!');
+
+  if (streak > 1) msg += `\n🔥 ${streak}-day streak! Keep it going!`;
+
+  return JSON.stringify({
+    result: msg,
+    webview: {
+      url: `webview.html?action=summary&dur=${duration}&goal=${goalReached}`,
+      aspectRatio: 1.0
+    }
+  });
+}
+
+function cancelFasting() {
+  const active = loadActive();
+  if (!active) {
+    return JSON.stringify({
+      result: "No active fast to cancel. 💙"
+    });
+  }
+  localStorage.removeItem(STORAGE_KEY);
+  return JSON.stringify({
+    result: "Fast cancelled. Rest days are important too! Tomorrow is a fresh start. 💙"
+  });
+}
+
+function getStatus() {
+  const active = loadActive();
+  if (!active) {
+    return JSON.stringify({
+      result: "No active fast. Say **start fasting** to begin!\n\n" +
+               "Available protocols: 14/10, 16/8 (default), 18/6, OMAD"
+    });
+  }
+
+  const now = Date.now();
+  const elapsed = now - active.startTime;
+  const remaining = active.targetTime - now;
+  const totalTarget = active.targetTime - active.startTime;
+  const progress = Math.min(elapsed / totalTarget, 1);
+  const phase = getPhase(elapsed, totalTarget);
+
+  let msg = `${phase.emoji} ${phase.name} Phase\n\n` +
+            `Elapsed: ${formatDuration(elapsed)}\n` +
+            `Target: ${active.protocol} (${PROTOCOLS[active.protocol]}h)\n`;
+
+  if (remaining > 0) {
+    msg += `Remaining: ${formatDuration(remaining)}\n`;
+  } else {
+    msg += `✅ Target reached! You can break your fast.\n`;
+  }
+
+  msg += `\n${phase.desc}\n\n${getMotivation(phase.name)}`;
+
+  return JSON.stringify({
+    result: msg,
+    webview: {
+      url: `webview.html?action=status&t=${active.startTime}`,
+      aspectRatio: 1.3
+    }
+  });
+}
+
+function getHistory() {
+  const history = loadHistory();
+  const streak = getStreak(history);
+
+  if (history.length === 0) {
+    return JSON.stringify({
+      result: "No fasts logged yet. Say **start fasting** to begin your first one!"
+    });
+  }
+
+  const recent = [...history].sort((a, b) => b.endTime - a.endTime).slice(0, 7);
+  let msg = `📊 Fasting History\n\n`;
+  msg += `🔥 Current streak: ${streak} day${streak !== 1 ? 's' : ''}\n\n`;
+
+  for (const fast of recent) {
+    const dur = formatDuration(fast.durationMinutes * 60000);
+    const badge = fast.goalReached ? '✅' : '💪';
+    const proto = fast.protocol || '16/8';
+    msg += `${badge} ${fast.date} — ${proto}: ${dur}${fast.goalReached ? '' : ' (incomplete)'}\n`;
+  }
+
+  return JSON.stringify({
+    result: msg,
+    webview: {
+      url: `webview.html?action=history`,
+      aspectRatio: 1.4
+    }
+  });
+}
+
+function getDashboard() {
+  const active = loadActive();
+  if (!active) {
+    return JSON.stringify({
+      result: "No active fast to display. Say **start fasting** to begin!",
+      webview: {
+        url: `webview.html?action=idle`,
+        aspectRatio: 1.3
+      }
+    });
+  }
+  return getStatus();
+}
+
+// ============================================================
+// ENTRY POINT
+// ============================================================
+
+window['ai_edge_gallery_get_result'] = async (data) => {
+  try {
+    const jsonData = JSON.parse(data);
+    const action = jsonData.action;
+
+    switch (action) {
+      case 'start':    return startFasting(jsonData);
+      case 'stop':     return stopFasting();
+      case 'cancel':   return cancelFasting();
+      case 'status':   return getStatus();
+      case 'history':  return getHistory();
+      case 'dashboard': return getDashboard();
+      default:
+        return JSON.stringify({ result: 'Unknown action. Try: start, stop, status, history, dashboard.' });
+    }
+  } catch (e) {
+    return JSON.stringify({ error: `Fasting Coach error: ${e.message}` });
+  }
+};
+</script>
+</body>
+</html>

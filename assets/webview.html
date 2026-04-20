@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fasting Coach</title>
+<style>
+  :root {
+    --bg: #0D1117;
+    --card: #161B22;
+    --text: #E6EDF3;
+    --text2: #8B949E;
+    --accent: #4A90D9;
+    --green: #3FB950;
+    --orange: #D29922;
+    --red: #F85149;
+    --gold: #FFD700;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* Timer Ring */
+  .timer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0 16px;
+    position: relative;
+  }
+  .timer-ring {
+    transform: rotate(-90deg);
+  }
+  .timer-ring-bg {
+    fill: none;
+    stroke: #21262D;
+    stroke-width: 8;
+  }
+  .timer-ring-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease, stroke 0.5s ease;
+  }
+  .timer-center {
+    position: absolute;
+    text-align: center;
+  }
+  .timer-elapsed {
+    font-size: 2em;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .timer-label {
+    font-size: 0.8em;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .timer-remaining {
+    font-size: 1em;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* Phase Badge */
+  .phase-badge {
+    text-align: center;
+    margin: 8px 0 16px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--card);
+    border-left: 4px solid var(--accent);
+    transition: border-color 0.3s ease;
+  }
+  .phase-emoji {
+    font-size: 1.5em;
+  }
+  .phase-name {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .phase-desc {
+    font-size: 0.85em;
+    color: var(--text2);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  /* Motivation */
+  .motivation {
+    text-align: center;
+    font-size: 0.95em;
+    color: var(--text);
+    padding: 12px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(74,144,217,0.1), rgba(80,200,120,0.1));
+    margin: 8px 0 16px;
+    font-style: italic;
+  }
+
+  /* Streak */
+  .streak-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .streak-fire {
+    font-size: 1.2em;
+  }
+  .streak-text {
+    font-size: 0.95em;
+    font-weight: 600;
+  }
+
+  /* History Dots */
+  .history-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 700;
+  }
+  .dot-goal { background: var(--green); color: #0D1117; }
+  .dot-partial { background: var(--orange); color: #0D1117; }
+  .dot-miss { background: #21262D; color: var(--text2); }
+
+  /* Summary Card */
+  .summary-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin: 12px 0;
+  }
+  .summary-emoji { font-size: 2.5em; }
+  .summary-title { font-size: 1.3em; font-weight: 700; margin-top: 8px; }
+  .summary-duration { font-size: 1.8em; font-weight: 700; margin-top: 8px; }
+  .summary-subtitle { font-size: 0.9em; color: var(--text2); margin-top: 4px; }
+
+  /* Protocol Tag */
+  .protocol-tag {
+    display: inline-block;
+    background: rgba(74,144,217,0.2);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.75em;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* Phase Progress Bar */
+  .phase-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 12px 0 4px;
+    background: #21262D;
+  }
+  .phase-segment {
+    transition: width 0.5s ease;
+  }
+
+  /* Idle State */
+  .idle-container {
+    text-align: center;
+    padding: 30px 10px;
+  }
+  .idle-emoji { font-size: 3em; }
+  .idle-title { font-size: 1.4em; font-weight: 700; margin-top: 12px; }
+  .idle-subtitle { font-size: 0.95em; color: var(--text2); margin-top: 8px; line-height: 1.4; }
+
+  /* History List */
+  .history-list {
+    list-style: none;
+  }
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #21262D;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .hi-icon { font-size: 1.2em; margin-right: 10px; }
+  .hi-date { font-size: 0.9em; color: var(--text2); }
+  .hi-dur { font-size: 0.9em; font-weight: 600; }
+  .hi-proto { font-size: 0.75em; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = 'fc_active';
+const HISTORY_KEY = 'fc_history';
+
+const PROTOCOLS = { '14/10': 14, '16/8': 16, '18/6': 18, 'OMAD': 23 };
+
+const PHASES = [
+  { name: 'Digestion',  emoji: '🔄', color: '#4A90D9', minPct: 0,    maxPct: 0.25, desc: 'Insulin drops. Body transitions from fed to fasted state.' },
+  { name: 'Transition', emoji: '⚡', color: '#50C878', minPct: 0.25, maxPct: 0.50, desc: 'Glycogen depleting. Fat burning begins!' },
+  { name: 'Fat Burn',   emoji: '🔥', color: '#FF8C00', minPct: 0.50, maxPct: 0.75, desc: 'Body running on fat. Mental clarity increases.' },
+  { name: 'Deep Burn',  emoji: '🦁', color: '#FF4500', minPct: 0.75, maxPct: 0.94, desc: 'Autophagy begins. Cellular repair activated!' },
+  { name: 'Goal!',       emoji: '🎉', color: '#FFD700', minPct: 0.94, maxPct: Infinity, desc: 'Protocol target reached! Full autophagy!' }
+];
+
+const MOTIVATIONS = {
+  'Digestion': ['Every hour counts. 💪', 'The journey starts now.', 'Trust the process! 🌱'],
+  'Transition': ['Fat burning is kicking in! 🔥', 'You are entering the zone!', 'Almost there — the best is yet to come!'],
+  'Fat Burn': ['Your body is literally burning fat! 🔥', 'Clarity mode: ON.', 'Fat is fuel. You are the engine. ⚡'],
+  'Deep Burn': ['Autophagy! Cells are being repaired! 🦁', 'Elite discipline!', 'Maximum fat oxidation. You are a beast! 🔥'],
+  'Goal!': ['You did it! Incredible! 🎉', 'Target reached! Absolute champion! ✨', 'That is elite-level fasting! 🏆']
+};
+
+function getPhase(elapsedMs, targetMs) {
+  const pct = Math.min(elapsedMs / targetMs, 1);
+  for (const p of PHASES) {
+    if (pct >= p.minPct && pct < p.maxPct) return p;
+  }
+  return PHASES[PHASES.length - 1];
+}
+
+function getMotivation(name) {
+  const m = MOTIVATIONS[name] || ['Keep going!'];
+  return m[Math.floor(Math.random() * m.length)];
+}
+
+function fmtDur(ms) {
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+function fmtTime(ts) {
+  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getStreak(history) {
+  if (!history || history.length === 0) return 0;
+  const sorted = [...history].sort((a, b) => b.endTime - a.endTime);
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0, checkDay = today.getTime();
+  for (let i = 0; i < 90; i++) {
+    const dayStr = new Date(checkDay).toISOString().split('T')[0];
+    if (sorted.find(f => f.date === dayStr && f.goalReached)) {
+      streak++;
+    } else if (i > 0) break;
+    checkDay -= 86400000;
+  }
+  return streak;
+}
+
+// ============================================================
+// RENDER VIEWS
+// ============================================================
+
+function renderStatus() {
+  const active = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  if (!active) { renderIdle(); return; }
+  const protocol = active.protocol || '16/8';
+  const targetHours = PROTOCOLS[protocol] || 16;
+  const startTime = active.startTime;
+  const targetTime = startTime + (targetHours * 3600000);
+
+  function update() {
+    const now = Date.now();
+    const elapsed = now - startTime;
+    const remaining = targetTime - now;
+    const totalTarget = targetTime - startTime;
+    const progress = Math.min(elapsed / totalTarget, 1);
+    const phase = getPhase(elapsed, totalTarget);
+
+    const r = 80, circ = 2 * Math.PI * r;
+    const offset = circ * (1 - progress);
+
+    let html = '';
+
+    // Timer Ring
+    html += `<div class="timer-container">
+      <svg class="timer-ring" width="200" height="200">
+        <circle class="timer-ring-bg" cx="100" cy="100" r="${r}"/>
+        <circle class="timer-ring-progress" cx="100" cy="100" r="${r}"
+          stroke="${phase.color}"
+          stroke-dasharray="${circ}"
+          stroke-dashoffset="${offset}"/>
+      </svg>
+      <div class="timer-center">
+        <div class="timer-elapsed" style="color:${phase.color}">${fmtDur(elapsed)}</div>
+        <div class="timer-label">elapsed</div>
+        ${remaining > 0
+          ? `<div class="timer-remaining">${fmtDur(remaining)} remaining</div>`
+          : `<div class="timer-remaining" style="color:var(--gold)">Target reached! ✨</div>`
+        }
+      </div>
+    </div>`;
+
+    // Phase Progress Bar
+    html += `<div class="phase-bar">`;
+    for (const p of PHASES) {
+      const w = p.maxPct === Infinity ? 6 : (p.maxPct - p.minPct) * 100;
+      const active2 = progress >= p.minPct;
+      html += `<div class="phase-segment" style="width:${w}%;background:${active2 ? p.color : '#21262D'}"></div>`;
+    }
+    html += `</div>`;
+
+    // Phase Badge
+    html += `<div class="phase-badge" style="border-left-color:${phase.color}">
+      <div class="phase-emoji">${phase.emoji}</div>
+      <div class="phase-name" style="color:${phase.color}">${phase.name}</div>
+      <div class="phase-desc">${phase.desc}</div>
+    </div>`;
+
+    // Motivation
+    html += `<div class="motivation">${getMotivation(phase.name)}</div>`;
+
+    // Protocol
+    html += `<div style="text-align:center"><span class="protocol-tag">${protocol}</span></div>`;
+
+    document.getElementById('app').innerHTML = html;
+  }
+
+  update();
+  setInterval(update, 30000);
+}
+function renderSummary(durationMs, goalReached) {
+  const emoji = goalReached ? '🎉' : '💪';
+  const title = goalReached ? 'Goal Reached!' : 'Fast Complete';
+  const subtitle = goalReached ? 'Incredible discipline!' : 'Every fast counts!';
+  const streak = getStreak(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
+
+  let html = `<div class="summary-card">
+    <div class="summary-emoji">${emoji}</div>
+    <div class="summary-title">${title}</div>
+    <div class="summary-duration" style="color:${goalReached ? 'var(--gold)' : 'var(--orange)'}">${fmtDur(durationMs)}</div>
+    <div class="summary-subtitle">${subtitle}</div>`;
+  if (streak > 1) {
+    html += `<div class="streak-container" style="margin-top:10px">
+      <span class="streak-fire">🔥</span>
+      <span class="streak-text">${streak}-day streak!</span>
+    </div>`;
+  }
+  html += `</div>`;
+  document.getElementById('app').innerHTML = html;
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const streak = getStreak(history);
+
+  let html = `<div style="text-align:center;margin-bottom:16px">
+    <div style="font-size:1.3em;font-weight:700">📊 Fasting History</div>`;
+  if (streak > 0) {
+    html += `<div class="streak-container" style="margin-top:6px">
+      <span class="streak-fire">🔥</span>
+      <span class="streak-text">${streak}-day streak</span>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Last 7 dots
+  const recent = [...history].sort((a, b) => b.endTime - a.endTime).slice(0, 7);
+  if (recent.length > 0) {
+    html += `<div class="history-dots">`;
+    recent.forEach(f => {
+      const cls = f.goalReached ? 'dot-goal' : 'dot-partial';
+      html += `<div class="dot ${cls}" title="${f.date}">${f.goalReached ? '✓' : fmtDur(f.durationMinutes * 60000)}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // History list
+  html += `<ul class="history-list">`;
+  if (recent.length === 0) {
+    html += `<div style="text-align:center;color:var(--text2);padding:20px">No fasts yet. Start your first one!</div>`;
+  }
+  recent.forEach(f => {
+    const cls = f.goalReached ? '✅' : '💪';
+    const proto = f.protocol || '16/8';
+    html += `<li class="history-item">
+      <span class="hi-icon">${cls}</span>
+      <div>
+        <div><span class="hi-dur">${fmtDur(f.durationMinutes * 60000)}</span> <span class="hi-proto">${proto}</span></div>
+        <div class="hi-date">${f.date}</div>
+      </div>
+    </li>`;
+  });
+  html += `</ul>`;
+
+  document.getElementById('app').innerHTML = html;
+}
+
+function renderIdle() {
+  document.getElementById('app').innerHTML = `
+    <div class="idle-container">
+      <div class="idle-emoji">🦁</div>
+      <div class="idle-title">Ready to fast?</div>
+      <div class="idle-subtitle">Say <strong>"start fasting"</strong> to begin.<br>
+      Protocols: 14/10 · 16/8 · 18/6 · OMAD</div>
+    </div>`;
+}
+
+// ============================================================
+// ROUTING
+// ============================================================
+
+const params = new URLSearchParams(window.location.search);
+const action = params.get('action') || 'status';
+
+switch (action) {
+  case 'status':
+    renderStatus();
+    break;
+  case 'summary': {
+    const dur = parseInt(params.get('dur') || '0');
+    const goal = params.get('goal') === 'true';
+    renderSummary(dur, goal);
+    break;
+  }
+  case 'history':
+    renderHistory();
+    break;
+  case 'idle':
+  default:
+    renderIdle();
+}
+</script>
+
+</body>
+</html>
