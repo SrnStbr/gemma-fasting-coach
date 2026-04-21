@@ -19,11 +19,11 @@ A motivational intermittent fasting coach that runs **100% on-device**. No cloud
 1. Open **AI Edge Gallery** app
 2. Select a model (Gemma 4 E4B recommended) → **Agent Skills**
 3. Tap **Skills** chip → **(+)** → **Load skill from URL**
-4. Enter: `https://srnstbr.github.io/fasting-coach`
+4. Enter: `https://srnstbr.github.io/gemma-fasting-coach`
 
 ### Option 2: Import from Local File (Android)
 ```bash
-git clone https://github.com/srnstbr/fasting-coach.git
+git clone https://github.com/srnstbr/gemma-fasting-coach.git
 adb push fasting-coach/ /sdcard/Download/
 ```
 Then in AI Edge Gallery: Skills → (+) → Import local skill → select the folder
