@@ -5,209 +5,453 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Fasting Coach</title>
 <style>
+  /* ===== Material 3 Dark Theme — Seed Color: #4A90D9 ===== */
   :root {
-    --bg: #0D1117;
-    --card: #161B22;
-    --text: #E6EDF3;
-    --text2: #8B949E;
-    --accent: #4A90D9;
-    --green: #3FB950;
-    --orange: #D29922;
-    --red: #F85149;
-    --gold: #FFD700;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 16px;
-    max-width: 400px;
-    margin: 0 auto;
-    overflow-x: hidden;
+    /* M3 Primary Palette */
+    --md-sys-color-primary: #A4C8FF;
+    --md-sys-color-on-primary: #003062;
+    --md-sys-color-primary-container: #1B4780;
+    --md-sys-color-on-primary-container: #D1E4FF;
+
+    /* M3 Secondary Palette */
+    --md-sys-color-secondary: #BEC6DC;
+    --md-sys-color-on-secondary: #283041;
+    --md-sys-color-secondary-container: #3E4759;
+    --md-sys-color-on-secondary-container: #DAE2F9;
+
+    /* M3 Tertiary Palette */
+    --md-sys-color-tertiary: #D2B8EA;
+    --md-sys-color-on-tertiary: #3B2255;
+    --md-sys-color-tertiary-container: #523A6D;
+    --md-sys-color-on-tertiary-container: #EEDBFF;
+
+    /* M3 Error Palette */
+    --md-sys-color-error: #FFB4AB;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000A;
+    --md-sys-color-on-error-container: #FFDAD6;
+
+    /* M3 Neutral Palette (Dark) */
+    --md-sys-color-background: #1B1B1F;
+    --md-sys-color-on-background: #E3E2E6;
+    --md-sys-color-surface: #1B1B1F;
+    --md-sys-color-on-surface: #E3E2E6;
+    --md-sys-color-on-surface-variant: #C3C6CF;
+    --md-sys-color-surface-container-lowest: #0F0F13;
+    --md-sys-color-surface-container-low: #1B1B1F;
+    --md-sys-color-surface-container: #1F1F23;
+    --md-sys-color-surface-container-high: #2A2A2E;
+    --md-sys-color-surface-container-highest: #353539;
+    --md-sys-color-outline: #8D9199;
+    --md-sys-color-outline-variant: #43474F;
+    --md-sys-color-inverse-surface: #E3E2E6;
+    --md-sys-color-inverse-on-surface: #2B2B2F;
+    --md-sys-color-inverse-primary: #1B4780;
+
+    /* Phase Accent Colors — mapped to M3 tonal system */
+    --phase-digestion: #8EC5FF;
+    --phase-transition: #7DDCA0;
+    --phase-fatburn: #FFB366;
+    --phase-deepburn: #FF7A5C;
+    --phase-goal: #FFD666;
+
+    /* Elevation overlays (M3 uses tonal elevation, not shadows) */
+    --md-sys-elevation-1: linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+    --md-sys-elevation-2: linear-gradient(0deg, rgba(255,255,255,0.08), rgba(255,255,255,0.08));
+    --md-sys-elevation-3: linear-gradient(0deg, rgba(255,255,255,0.11), rgba(255,255,255,0.11));
+
+    /* M3 Shape Scale */
+    --md-sys-shape-xs: 4px;
+    --md-sys-shape-sm: 8px;
+    --md-sys-shape-md: 12px;
+    --md-sys-shape-lg: 16px;
+    --md-sys-shape-xl: 28px;
+    --md-sys-shape-full: 9999px;
+
+    /* M3 Motion */
+    --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+    --md-sys-motion-duration-short: 200ms;
+    --md-sys-motion-duration-medium: 400ms;
+    --md-sys-motion-duration-long: 600ms;
   }
 
-  /* Timer Ring */
-  .timer-container {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    padding: 16px;
+    max-width: 420px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Top App Bar (M3 Small) ===== */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0 8px;
+  }
+  .top-bar-title {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* ===== M3 Circular Progress Indicator (Timer Ring) ===== */
+  .timer-section {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 20px 0 16px;
+    margin: 24px 0 20px;
     position: relative;
   }
-  .timer-ring {
+  .timer-svg {
     transform: rotate(-90deg);
+    filter: drop-shadow(0 0 12px var(--glow-color, rgba(164,200,255,0.3)));
   }
-  .timer-ring-bg {
+  .timer-track {
     fill: none;
-    stroke: #21262D;
-    stroke-width: 8;
+    stroke: var(--md-sys-color-surface-container-highest);
+    stroke-width: 10;
   }
-  .timer-ring-progress {
+  .timer-progress {
     fill: none;
-    stroke: var(--accent);
-    stroke-width: 8;
+    stroke: var(--phase-color, var(--md-sys-color-primary));
+    stroke-width: 10;
     stroke-linecap: round;
-    transition: stroke-dashoffset 1s ease, stroke 0.5s ease;
+    transition: stroke-dashoffset var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-standard),
+                stroke var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
   }
-  .timer-center {
+  .timer-inner {
     position: absolute;
     text-align: center;
   }
   .timer-elapsed {
-    font-size: 2em;
-    font-weight: 700;
+    font-size: 40px;
+    font-weight: 300; /* M3 Display Small equivalent */
     letter-spacing: -1px;
     line-height: 1.1;
+    color: var(--md-sys-color-on-surface);
   }
-  .timer-label {
-    font-size: 0.8em;
-    color: var(--text2);
-    margin-top: 2px;
+  .timer-separator {
+    font-size: 14px;
+    font-weight: 500; /* M3 Label Large */
+    letter-spacing: 0.1px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 4px;
   }
   .timer-remaining {
-    font-size: 1em;
-    color: var(--text2);
-    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 400; /* M3 Body Large */
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 6px;
   }
 
-  /* Phase Badge */
-  .phase-badge {
-    text-align: center;
-    margin: 8px 0 16px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    background: var(--card);
-    border-left: 4px solid var(--accent);
-    transition: border-color 0.3s ease;
+  /* ===== M3 Phase Progress Bar (Segmented) ===== */
+  .phase-bar-container {
+    padding: 0 16px;
+    margin: 0 0 20px;
   }
-  .phase-emoji {
-    font-size: 1.5em;
-  }
-  .phase-name {
-    font-size: 1.2em;
-    font-weight: 700;
-    margin-top: 2px;
-  }
-  .phase-desc {
-    font-size: 0.85em;
-    color: var(--text2);
-    margin-top: 4px;
-    line-height: 1.3;
-  }
-
-  /* Motivation */
-  .motivation {
-    text-align: center;
-    font-size: 0.95em;
-    color: var(--text);
-    padding: 12px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(74,144,217,0.1), rgba(80,200,120,0.1));
-    margin: 8px 0 16px;
-    font-style: italic;
-  }
-
-  /* Streak */
-  .streak-container {
+  .phase-bar {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
+    height: 8px;
+    border-radius: var(--md-sys-shape-full);
+    overflow: hidden;
+    background: var(--md-sys-color-surface-container-highest);
+  }
+  .phase-segment {
+    transition: background var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard),
+                width var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+  }
+  .phase-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .phase-bar-label {
+    font-size: 10px; /* M3 Label Small */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .phase-bar-label.active {
+    color: var(--phase-color, var(--md-sys-color-primary));
+  }
+
+  /* ===== M3 Card (Filled) ===== */
+  .m3-card {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-xl);
+    padding: 24px;
+    margin: 8px 0;
+    transition: background var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  }
+  .m3-card-elevated {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--md-sys-shape-xl);
+    padding: 24px;
     margin: 8px 0;
   }
-  .streak-fire {
-    font-size: 1.2em;
-  }
-  .streak-text {
-    font-size: 0.95em;
-    font-weight: 600;
+  .m3-card-outlined {
+    background: transparent;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-xl);
+    padding: 24px;
+    margin: 8px 0;
   }
 
-  /* History Dots */
-  .history-dots {
+  /* ===== Phase Card ===== */
+  .phase-card {
+    text-align: center;
+  }
+  .phase-emoji {
+    font-size: 32px;
+  }
+  .phase-name {
+    font-size: 22px; /* M3 Headline Small */
+    font-weight: 500;
+    letter-spacing: 0;
+    margin-top: 8px;
+  }
+  .phase-desc {
+    font-size: 14px; /* M3 Body Medium */
+    font-weight: 400;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ===== Motivation Chip (M3 Assist Chip Tonal) ===== */
+  .motivation-chip {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 16px auto;
+    padding: 8px 16px;
+    border-radius: var(--md-sys-shape-sm);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    font-size: 14px; /* M3 Body Medium */
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    max-width: fit-content;
+  }
+
+  /* ===== M3 Filled Chip (Protocol) ===== */
+  .protocol-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: var(--md-sys-shape-sm);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    font-size: 12px; /* M3 Label Large */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== Streak (M3 Badge style) ===== */
+  .streak-row {
+    display: flex;
+    align-items: center;
     justify-content: center;
     gap: 8px;
     margin: 12px 0;
+  }
+  .streak-icon {
+    font-size: 20px;
+  }
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--md-sys-shape-full);
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+  }
+
+  /* ===== History Dots (M3 FAB-ish) ===== */
+  .history-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0;
     flex-wrap: wrap;
   }
   .dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--md-sys-shape-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7em;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 500;
+    transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
   }
-  .dot-goal { background: var(--green); color: #0D1117; }
-  .dot-partial { background: var(--orange); color: #0D1117; }
-  .dot-miss { background: #21262D; color: var(--text2); }
-
-  /* Summary Card */
-  .summary-card {
-    background: var(--card);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    margin: 12px 0;
+  .dot:active { transform: scale(0.9); }
+  .dot-goal {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
   }
-  .summary-emoji { font-size: 2.5em; }
-  .summary-title { font-size: 1.3em; font-weight: 700; margin-top: 8px; }
-  .summary-duration { font-size: 1.8em; font-weight: 700; margin-top: 8px; }
-  .summary-subtitle { font-size: 0.9em; color: var(--text2); margin-top: 4px; }
+  .dot-partial {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+  .dot-miss {
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface-variant);
+  }
 
-  /* Protocol Tag */
-  .protocol-tag {
-    display: inline-block;
-    background: rgba(74,144,217,0.2);
-    color: var(--accent);
-    padding: 3px 10px;
-    border-radius: 8px;
-    font-size: 0.75em;
-    font-weight: 600;
+  /* ===== Summary Card ===== */
+  .summary-section { text-align: center; }
+  .summary-emoji { font-size: 48px; }
+  .summary-title {
+    font-size: 24px; /* M3 Headline Medium */
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 12px;
+  }
+  .summary-duration {
+    font-size: 48px; /* M3 Display Small */
+    font-weight: 300;
+    letter-spacing: -1px;
+    margin-top: 12px;
+  }
+  .summary-subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface-variant);
     margin-top: 8px;
   }
 
-  /* Phase Progress Bar */
-  .phase-bar {
-    display: flex;
-    height: 6px;
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 12px 0 4px;
-    background: #21262D;
-  }
-  .phase-segment {
-    transition: width 0.5s ease;
-  }
-
-  /* Idle State */
-  .idle-container {
-    text-align: center;
-    padding: 30px 10px;
-  }
-  .idle-emoji { font-size: 3em; }
-  .idle-title { font-size: 1.4em; font-weight: 700; margin-top: 12px; }
-  .idle-subtitle { font-size: 0.95em; color: var(--text2); margin-top: 8px; line-height: 1.4; }
-
-  /* History List */
+  /* ===== M3 List Items ===== */
   .history-list {
     list-style: none;
   }
   .history-item {
     display: flex;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #21262D;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    gap: 16px;
   }
   .history-item:last-child { border-bottom: none; }
-  .hi-icon { font-size: 1.2em; margin-right: 10px; }
-  .hi-date { font-size: 0.9em; color: var(--text2); }
-  .hi-dur { font-size: 0.9em; font-weight: 600; }
-  .hi-proto { font-size: 0.75em; color: var(--accent); }
+  .hi-icon {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--md-sys-shape-full);
+    background: var(--md-sys-color-surface-container-highest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .hi-content { flex: 1; }
+  .hi-dur {
+    font-size: 16px; /* M3 Body Large */
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
+  .hi-proto {
+    font-size: 11px; /* M3 Label Small */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-primary);
+    margin-left: 8px;
+  }
+  .hi-date {
+    font-size: 12px; /* M3 Label Medium */
+    font-weight: 400;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 2px;
+  }
+
+  /* ===== Idle State ===== */
+  .idle-container {
+    text-align: center;
+    padding: 48px 16px;
+  }
+  .idle-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--md-sys-shape-xl);
+    background: var(--md-sys-color-primary-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 36px;
+  }
+  .idle-title {
+    font-size: 24px; /* M3 Headline Medium */
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--md-sys-color-on-surface);
+  }
+  .idle-subtitle {
+    font-size: 14px; /* M3 Body Medium */
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .idle-chips {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .idle-chip {
+    padding: 6px 16px;
+    border-radius: var(--md-sys-shape-sm);
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== Bottom Indicator Bar ===== */
+  .bottom-indicator {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    padding-bottom: 8px;
+  }
+  .bottom-indicator-pill {
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--md-sys-color-on-surface-variant);
+    opacity: 0.4;
+  }
+
+  /* ===== Section Titles ===== */
+  .section-title {
+    font-size: 14px; /* M3 Title Small */
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 12px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -221,12 +465,20 @@ const HISTORY_KEY = 'fc_history';
 const PROTOCOLS = { '14/10': 14, '16/8': 16, '18/6': 18, 'OMAD': 23 };
 
 const PHASES = [
-  { name: 'Digestion',  emoji: '🔄', color: '#4A90D9', minPct: 0,    maxPct: 0.25, desc: 'Insulin drops. Body transitions from fed to fasted state.' },
-  { name: 'Transition', emoji: '⚡', color: '#50C878', minPct: 0.25, maxPct: 0.50, desc: 'Glycogen depleting. Fat burning begins!' },
-  { name: 'Fat Burn',   emoji: '🔥', color: '#FF8C00', minPct: 0.50, maxPct: 0.75, desc: 'Body running on fat. Mental clarity increases.' },
-  { name: 'Deep Burn',  emoji: '🦁', color: '#FF4500', minPct: 0.75, maxPct: 0.94, desc: 'Autophagy begins. Cellular repair activated!' },
-  { name: 'Goal!',       emoji: '🎉', color: '#FFD700', minPct: 0.94, maxPct: Infinity, desc: 'Protocol target reached! Full autophagy!' }
+  { name: 'Digestion',  emoji: '🔄', colorVar: '--phase-digestion', minPct: 0,    maxPct: 0.25, desc: 'Insulin drops. Body transitions from fed to fasted state.' },
+  { name: 'Transition', emoji: '⚡', colorVar: '--phase-transition', minPct: 0.25, maxPct: 0.50, desc: 'Glycogen depleting. Fat burning begins!' },
+  { name: 'Fat Burn',   emoji: '🔥', colorVar: '--phase-fatburn',   minPct: 0.50, maxPct: 0.75, desc: 'Body running on fat. Mental clarity increases.' },
+  { name: 'Deep Burn',  emoji: '🦁', colorVar: '--phase-deepburn',  minPct: 0.75, maxPct: 0.94, desc: 'Autophagy begins. Cellular repair activated!' },
+  { name: 'Goal!',       emoji: '🎉', colorVar: '--phase-goal',       minPct: 0.94, maxPct: Infinity, desc: 'Protocol target reached! Full autophagy!' }
 ];
+
+const PHASE_CSS_COLORS = {
+  '--phase-digestion': '#8EC5FF',
+  '--phase-transition': '#7DDCA0',
+  '--phase-fatburn': '#FFB366',
+  '--phase-deepburn': '#FF7A5C',
+  '--phase-goal': '#FFD666'
+};
 
 const MOTIVATIONS = {
   'Digestion': ['Every hour counts. 💪', 'The journey starts now.', 'Trust the process! 🌱'],
@@ -247,6 +499,10 @@ function getPhase(elapsedMs, targetMs) {
 function getMotivation(name) {
   const m = MOTIVATIONS[name] || ['Keep going!'];
   return m[Math.floor(Math.random() * m.length)];
+}
+
+function getPhaseColor(phase) {
+  return PHASE_CSS_COLORS[phase.colorVar] || '#A4C8FF';
 }
 
 function fmtDur(ms) {
@@ -299,52 +555,66 @@ function renderStatus() {
     const totalTarget = targetTime - startTime;
     const progress = Math.min(elapsed / totalTarget, 1);
     const phase = getPhase(elapsed, totalTarget);
+    const phaseColor = getPhaseColor(phase);
 
-    const r = 80, circ = 2 * Math.PI * r;
+    const r = 88, circ = 2 * Math.PI * r;
     const offset = circ * (1 - progress);
 
     let html = '';
 
-    // Timer Ring
-    html += `<div class="timer-container">
-      <svg class="timer-ring" width="200" height="200">
-        <circle class="timer-ring-bg" cx="100" cy="100" r="${r}"/>
-        <circle class="timer-ring-progress" cx="100" cy="100" r="${r}"
-          stroke="${phase.color}"
+    // Top bar
+    html += `<div class="top-bar"><div class="top-bar-title">🦁 Fasting Coach</div></div>`;
+
+    // Timer Ring — M3 style with glow
+    html += `<div class="timer-section">
+      <svg class="timer-svg" width="220" height="220" style="--glow-color: ${phaseColor}44">
+        <circle class="timer-track" cx="110" cy="110" r="${r}"/>
+        <circle class="timer-progress" cx="110" cy="110" r="${r}"
+          stroke="${phaseColor}"
           stroke-dasharray="${circ}"
-          stroke-dashoffset="${offset}"/>
+          stroke-dashoffset="${offset}"
+          style="--phase-color: ${phaseColor}"/>
       </svg>
-      <div class="timer-center">
-        <div class="timer-elapsed" style="color:${phase.color}">${fmtDur(elapsed)}</div>
-        <div class="timer-label">elapsed</div>
+      <div class="timer-inner">
+        <div class="timer-elapsed">${fmtDur(elapsed)}</div>
+        <div class="timer-separator">elapsed</div>
         ${remaining > 0
           ? `<div class="timer-remaining">${fmtDur(remaining)} remaining</div>`
-          : `<div class="timer-remaining" style="color:var(--gold)">Target reached! ✨</div>`
+          : `<div class="timer-remaining" style="color: var(--phase-goal)">Target reached ✨</div>`
         }
       </div>
     </div>`;
 
-    // Phase Progress Bar
-    html += `<div class="phase-bar">`;
+    // Phase Progress Bar + Labels
+    html += `<div class="phase-bar-container"><div class="phase-bar">`;
     for (const p of PHASES) {
       const w = p.maxPct === Infinity ? 6 : (p.maxPct - p.minPct) * 100;
-      const active2 = progress >= p.minPct;
-      html += `<div class="phase-segment" style="width:${w}%;background:${active2 ? p.color : '#21262D'}"></div>`;
+      const isActive = progress >= p.minPct;
+      const c = isActive ? getPhaseColor(p) : 'transparent';
+      html += `<div class="phase-segment" style="width:${w}%;background:${c}"></div>`;
     }
-    html += `</div>`;
+    html += `</div><div class="phase-bar-labels">`;
+    for (const p of PHASES.slice(0, -1)) {
+      const isActive = progress >= p.minPct;
+      html += `<span class="phase-bar-label ${isActive ? 'active' : ''}" style="${isActive ? 'color:' + getPhaseColor(p) : ''}">${p.emoji}</span>`;
+    }
+    html += `</div></div>`;
 
-    // Phase Badge
-    html += `<div class="phase-badge" style="border-left-color:${phase.color}">
+    // Phase Card (M3 Filled)
+    html += `<div class="m3-card phase-card" style="--phase-color: ${phaseColor}">
       <div class="phase-emoji">${phase.emoji}</div>
-      <div class="phase-name" style="color:${phase.color}">${phase.name}</div>
+      <div class="phase-name" style="color: ${phaseColor}">${phase.name}</div>
       <div class="phase-desc">${phase.desc}</div>
     </div>`;
 
-    // Motivation
-    html += `<div class="motivation">${getMotivation(phase.name)}</div>`;
+    // Motivation Chip (M3 Tonal)
+    html += `<div class="motivation-chip">💡 ${getMotivation(phase.name)}</div>`;
 
-    // Protocol
-    html += `<div style="text-align:center"><span class="protocol-tag">${protocol}</span></div>`;
+    // Protocol Chip
+    html += `<div style="text-align:center;margin-top:4px"><span class="protocol-chip">${protocol}</span></div>`;
+
+    // Bottom indicator
+    html += `<div class="bottom-indicator"><div class="bottom-indicator-pill"></div></div>`;
 
     document.getElementById('app').innerHTML = html;
   }
@@ -352,43 +622,56 @@ function renderStatus() {
   update();
   setInterval(update, 30000);
 }
+
 function renderSummary(durationMs, goalReached) {
   const emoji = goalReached ? '🎉' : '💪';
   const title = goalReached ? 'Goal Reached!' : 'Fast Complete';
   const subtitle = goalReached ? 'Incredible discipline!' : 'Every fast counts!';
+  const accentColor = goalReached ? 'var(--phase-goal)' : 'var(--phase-fatburn)';
   const streak = getStreak(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
 
-  let html = `<div class="summary-card">
+  let html = '';
+
+  html += `<div class="top-bar"><div class="top-bar-title">🦁 Fasting Coach</div></div>`;
+
+  html += `<div class="m3-card summary-section">
     <div class="summary-emoji">${emoji}</div>
     <div class="summary-title">${title}</div>
-    <div class="summary-duration" style="color:${goalReached ? 'var(--gold)' : 'var(--orange)'}">${fmtDur(durationMs)}</div>
+    <div class="summary-duration" style="color: ${accentColor}">${fmtDur(durationMs)}</div>
     <div class="summary-subtitle">${subtitle}</div>`;
+
   if (streak > 1) {
-    html += `<div class="streak-container" style="margin-top:10px">
-      <span class="streak-fire">🔥</span>
-      <span class="streak-text">${streak}-day streak!</span>
+    html += `<div class="streak-row" style="margin-top:16px">
+      <span class="streak-badge">🔥 ${streak}-day streak</span>
     </div>`;
   }
   html += `</div>`;
+
+  html += `<div class="bottom-indicator"><div class="bottom-indicator-pill"></div></div>`;
+
   document.getElementById('app').innerHTML = html;
 }
 
 function renderHistory() {
   const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   const streak = getStreak(history);
+  const recent = [...history].sort((a, b) => b.endTime - a.endTime).slice(0, 7);
 
-  let html = `<div style="text-align:center;margin-bottom:16px">
-    <div style="font-size:1.3em;font-weight:700">📊 Fasting History</div>`;
+  let html = '';
+
+  html += `<div class="top-bar"><div class="top-bar-title">🦁 Fasting Coach</div></div>`;
+
+  // Section title
+  html += `<div class="section-title">Fasting History</div>`;
+
+  // Streak badge
   if (streak > 0) {
-    html += `<div class="streak-container" style="margin-top:6px">
-      <span class="streak-fire">🔥</span>
-      <span class="streak-text">${streak}-day streak</span>
+    html += `<div class="streak-row">
+      <span class="streak-badge">🔥 ${streak}-day streak</span>
     </div>`;
   }
-  html += `</div>`;
 
   // Last 7 dots
-  const recent = [...history].sort((a, b) => b.endTime - a.endTime).slice(0, 7);
   if (recent.length > 0) {
     html += `<div class="history-dots">`;
     recent.forEach(f => {
@@ -398,35 +681,45 @@ function renderHistory() {
     html += `</div>`;
   }
 
-  // History list
-  html += `<ul class="history-list">`;
+  // History list with M3 list items
+  html += `<div class="m3-card-elevated" style="padding:8px 24px"><ul class="history-list">`;
   if (recent.length === 0) {
-    html += `<div style="text-align:center;color:var(--text2);padding:20px">No fasts yet. Start your first one!</div>`;
+    html += `<div style="text-align:center;color:var(--md-sys-color-on-surface-variant);padding:24px;font-size:14px">No fasts yet. Start your first one!</div>`;
   }
   recent.forEach(f => {
-    const cls = f.goalReached ? '✅' : '💪';
+    const iconEmoji = f.goalReached ? '✅' : '💪';
     const proto = f.protocol || '16/8';
     html += `<li class="history-item">
-      <span class="hi-icon">${cls}</span>
-      <div>
-        <div><span class="hi-dur">${fmtDur(f.durationMinutes * 60000)}</span> <span class="hi-proto">${proto}</span></div>
+      <div class="hi-icon">${iconEmoji}</div>
+      <div class="hi-content">
+        <div><span class="hi-dur">${fmtDur(f.durationMinutes * 60000)}</span><span class="hi-proto">${proto}</span></div>
         <div class="hi-date">${f.date}</div>
       </div>
     </li>`;
   });
-  html += `</ul>`;
+  html += `</ul></div>`;
+
+  html += `<div class="bottom-indicator"><div class="bottom-indicator-pill"></div></div>`;
 
   document.getElementById('app').innerHTML = html;
 }
 
 function renderIdle() {
   document.getElementById('app').innerHTML = `
+    <div class="top-bar"><div class="top-bar-title">🦁 Fasting Coach</div></div>
     <div class="idle-container">
-      <div class="idle-emoji">🦁</div>
+      <div class="idle-icon">🦁</div>
       <div class="idle-title">Ready to fast?</div>
       <div class="idle-subtitle">Say <strong>"start fasting"</strong> to begin.<br>
-      Protocols: 14/10 · 16/8 · 18/6 · OMAD</div>
-    </div>`;
+      Choose your protocol below:</div>
+      <div class="idle-chips">
+        <span class="idle-chip">14/10</span>
+        <span class="idle-chip">16/8</span>
+        <span class="idle-chip">18/6</span>
+        <span class="idle-chip">OMAD</span>
+      </div>
+    </div>
+    <div class="bottom-indicator"><div class="bottom-indicator-pill"></div></div>`;
 }
 
 // ============================================================
